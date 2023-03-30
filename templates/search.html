@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Search{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1 class="text">Anime Search Engine</h1>
+  <form id="searchForm">
+    <div class="form-group">
+      <label for="genre" class="text">Genre:</label>
+      <input type="text" class="form-control textboxes" id="genre" name="genre" placeholder="Enter genre">
+    </div>
+    <div class="form-group">
+      <label for="type" class="text">Type (TV, Movie, OVA):</label>
+      <input type="text" class="form-control textboxes" id="type" name="type" placeholder="Enter type">
+    </div>
+    <div class="form-group">
+      <label for="score" class="text">Score (1 to 5):</label>
+      <input type="number" class="form-control textboxes" id="score" name="score" min="1" max="5" placeholder="Enter score">
+    </div>
+    <div class="form-group">
+      <label for="episodes" class="text">Number of episodes:</label>
+      <input type="number" class="form-control textboxes" id="episodes" name="episodes" min="1" placeholder="Enter number of episodes">
+    </div>
+    <div class="form-group">
+      <label for="studio" class="text">Studio:</label>
+      <input type="text" class="form-control textboxes" id="studio" name="studio" placeholder="Enter studio name">
+    </div>
+    <button type="submit" class="btn button" id="buttonX">Submit</button>
+    <button type="button" class="btn button" id="buttonY">Clear All</button>
+  </form>
+  <br>
+  <h2 class="text">Results</h2>
+   <div class="mt-4">
+    <ul id="resultsList" class="list-group"></ul>
+  </div>
+  <br>
+  <p class="text">Note: This search engine uses the dataset <a href="https://www.kaggle.com/datasets/a9ece97f83e99ab5955ddf7ab9c3f3a9047ba5cdbb08189b11e7243630d969d8" target="_blank">link here</a>, therefore all results come from what is available on said dataset.</p>
+</div>
+    <script>
+function formatResult(result) {
+  return `
+    <div><strong>Rank:</strong> ${result['Rank']}</div>
+    <div><strong>Name:</strong> ${result['Name']}</div>
+    <div><strong>Japanese_name:</strong> ${result['Japanese_name']}</div>
+    <div><strong>Type:</strong> ${result['Type']}</div>
+    <div><strong>Episodes:</strong> ${result['Episodes']}</div>
+    <div><strong>Studio:</strong> ${result['Studio']}</div>
+    <div><strong>Release season:</strong> ${result['Release_season']}</div>
+    <div><strong>Genres:</strong> ${result['Genres']}</div>
+    <div><strong>Score:</strong> ${result['Score']}</div>
+  `;
+}
+
+document.getElementById('buttonX').addEventListener('click', function(event) {
+  event.preventDefault();
+  const form = document.getElementById('searchForm');
+  const formData = new FormData(form);
+
+  fetch('/search', {
+    method: 'POST',
+    body: formData,
+  })
+  .then(response => response.json())
+  .then(data => {
+    // Update the resultsList with the search results
+    const resultsList = document.getElementById('resultsList');
+    resultsList.innerHTML = '';
+
+    data.forEach(result => {
+      const listItem = document.createElement('li');
+      listItem.className = 'list-group-item';
+      listItem.innerHTML = formatResult(result);
+      resultsList.appendChild(listItem);
+    });
+  });
+});
+
+document.getElementById('buttonY').addEventListener('click', function() {
+  fetch('/clear', {
+    method: 'POST',
+  })
+  .then(response => {
+    // Clear the input fields
+    document.getElementById('searchForm').reset();
+  });
+});
+</script>
+{% endblock %}
